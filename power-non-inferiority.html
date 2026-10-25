@@ -1,0 +1,439 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Power vid non-inferiority</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: en kolumn. 1) verktyget: resultat, figur, reglage, 2) en- och tvåsidigt, 3) tolkning av konfidensintervall, 4) begrepp, 5) hur Δ väljs, 6) formel */
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --soft:#eef1f6; --fg:#1b2230; --muted:#5b6475; --line:#d9dde5;
+  --h0:#6b7385; --h1:#2f5fb3; --alpha:#d0473d; --beta:#d89a1c; --power:#2e8b57; --margin:#8a4fb8;
+  --display:"Newsreader",Georgia,serif; --body:"Figtree",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161d; --panel:#1a2029; --soft:#222a35; --fg:#e7eaf0; --muted:#9aa3b4; --line:#2e3644;
+  --h0:#9aa3b4; --h1:#7ea6f0; --alpha:#ee6d62; --beta:#e8b545; --power:#5cc58a; --margin:#c08ae8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161d; --panel:#1a2029; --soft:#222a35; --fg:#e7eaf0; --muted:#9aa3b4; --line:#2e3644;
+  --h0:#9aa3b4; --h1:#7ea6f0; --alpha:#ee6d62; --beta:#e8b545; --power:#5cc58a; --margin:#c08ae8; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 48px;padding-inline:16px}
+h1{font-family:var(--display);font-weight:500;font-size:2.2rem;line-height:1.15;margin:0 0 6px;text-wrap:balance}
+h2{font-family:var(--display);font-weight:500;font-size:1.4rem;margin:0 0 8px;text-wrap:balance}
+h3{font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.lede{color:var(--muted);max-width:66ch;margin:0 0 24px}
+p{max-width:70ch;margin:0 0 10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+section{margin-top:40px}
+/* resultatrad */
+.res{display:flex;flex-wrap:wrap;gap:14px 36px;align-items:flex-end;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.big{font-family:var(--mono);font-size:2.2rem;line-height:1;font-variant-numeric:tabular-nums;font-weight:500}
+.big small{font-size:1rem;color:var(--muted);font-weight:400;margin-left:6px}
+.kv{display:grid;grid-template-columns:auto auto;gap:2px 16px;font-size:.92rem;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.say{background:var(--soft);border-radius:8px;padding:12px 14px;font-size:.95rem;margin-top:14px}
+.say b{font-weight:600}
+.warn{color:var(--alpha);font-weight:500}
+svg{width:100%;height:auto;display:block}
+.scroll{overflow-x:auto}
+.scroll svg{min-width:580px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.86rem;color:var(--muted);margin-top:6px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.ln{display:inline-block;width:18px;height:0;border-top:2px solid;margin-right:6px;vertical-align:4px}
+/* reglage */
+.sliders.inc{margin-top:0;border-top:0;padding-top:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.sliders.four{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.figwrap{margin-top:10px}
+#fig{max-height:46vh;max-width:100%}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px 24px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.sl{display:flex;flex-direction:column;gap:4px;min-width:0}
+.sl .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sl label{font-weight:500}
+.sl small{color:var(--muted);font-size:.8rem;line-height:1.35}
+.sl input[type=range]{width:100%;accent-color:var(--h1)}
+.box{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;background:var(--panel);overflow:hidden;width:118px;flex:none}
+.box input{width:100%;min-width:0;font:inherit;font-family:var(--mono);font-size:.95rem;padding:5px 8px;border:0;background:transparent;color:var(--fg);text-align:right}
+.box span{padding:0 8px;color:var(--muted);font-size:.8rem;background:var(--soft);align-self:stretch;display:flex;align-items:center}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 24px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.fields .sl .box{width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--h1);outline-offset:1px}
+button{font:inherit;font-size:.9rem;padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--soft);color:var(--fg);cursor:pointer}
+button:hover{border-color:var(--h1)}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.presets button{font-size:.8rem;padding:3px 9px}
+/* text */
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:4px 28px}
+.term{padding:12px 0;border-bottom:1px solid var(--line);min-width:0;margin:0}
+.term dt{font-weight:600;margin-bottom:2px}
+.term dd{margin:0;font-size:.95rem}
+.term .ex{display:block;color:var(--muted);font-size:.88rem;margin-top:4px}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:10px;max-width:74ch}
+.steps li::before{content:counter(s);font-family:var(--mono);font-weight:500;width:24px;height:24px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.helper{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end;margin-top:14px}
+.helper .sl{width:170px}.helper .box{width:100%}
+.mono{font-family:var(--mono)}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+.tbl{overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+th{font-weight:500;color:var(--muted);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase}
+tr.hl td{background:var(--soft)}
+.formula{font-family:var(--mono);font-size:.92rem;background:var(--soft);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:nowrap;margin:8px 0 10px}
+.code{position:relative;margin:8px 0 12px}
+.code pre{margin:0;font-family:var(--mono);font-size:.86rem;line-height:1.55;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre}
+.code button{position:absolute;top:8px;right:8px;font-size:.78rem;padding:3px 9px;background:var(--panel)}
+.cal td.ok{color:var(--power);font-weight:500}
+.foot{margin-top:36px;color:var(--muted);font-size:.85rem;max-width:74ch}
+</style>
+
+<div class="wrap">
+  <h1>Power vid non-inferiority</h1>
+  <p class="lede">Räknare för en non-inferiority-studie (NI) med binärt utfall: andelen som får en händelse, till exempel postoperativ infektion inom 30 dagar. Dra i reglagen eller skriv in värden. Figuren och antalet forskningspersoner (FP) som behövs uppdateras direkt.</p>
+
+  <div class="panel">
+    <div class="res" aria-live="polite">
+      <div><h3>Behövs per grupp</h3><div class="big" id="nreq">–</div></div>
+      <dl class="kv">
+        <dt>Totalt, båda grupperna</dt><dd id="ntot">–</dd>
+        <dt>Att rekrytera med bortfall</dt><dd id="nrec">–</dd>
+        <dt>Konfidensnivå ↔ ensidigt α</dt><dd id="aa">–</dd>
+        <dt>z-värden (α, power)</dt><dd id="zz">–</dd>
+      </dl>
+    </div>
+
+    <div class="sliders inc">
+      <div class="sl">
+        <div class="top"><label for="p0">Kumulativ incidens, standard</label><div class="box"><input id="p0B" type="number" min="0.5" max="60" step="0.5" aria-label="Kumulativ incidens standard i procent"><span>%</span></div></div>
+        <input id="p0" type="range" min="0.5" max="60" step="0.5" value="10">
+        <small>Väntad andel med händelsen i standardgruppen. Från tidigare studier eller register.</small>
+      </div>
+      <div class="sl">
+        <div class="top"><label for="p1">Kumulativ incidens, ny</label><div class="box"><input id="p1B" type="number" min="0.5" max="60" step="0.5" aria-label="Kumulativ incidens ny behandling i procent"><span>%</span></div></div>
+        <input id="p1" type="range" min="0.5" max="60" step="0.5" value="10">
+        <div class="presets"><button type="button" id="same">Samma som standard</button></div>
+        <small id="p1Txt"></small>
+      </div>
+    </div>
+
+    <div class="scroll figwrap"><svg id="fig" viewBox="0 0 760 312" role="img" aria-label="H0-kurva vid NI-gränsen och H1-kurva vid förväntad skillnad, med ytor för alfa, beta och power, samt ett typiskt konfidensintervall"></svg></div>
+    <div class="legend">
+      <span><span class="ln" style="border-color:var(--h0)"></span>H0: ny är exakt Δ sämre</span>
+      <span><span class="ln" style="border-color:var(--h1)"></span>H1: förväntad skillnad</span>
+      <span><span class="ln" style="border-color:var(--margin)"></span>NI-gräns Δ</span>
+      <span><span class="ln" style="border-color:var(--fg);border-top-style:dashed"></span>Gränsvärde</span>
+      <span><span class="sw" style="background:var(--alpha)"></span>α</span>
+      <span><span class="sw" style="background:var(--beta)"></span>β</span>
+      <span><span class="sw" style="background:var(--power)"></span>Power</span>
+    </div>
+
+    <div class="sliders four">
+      <div class="sl">
+        <div class="top"><label for="ci">Konfidensnivå (tvåsidig)</label><div class="box"><input id="ciB" type="number" min="80" max="99.8" step="0.5" aria-label="Konfidensnivå i procent"><span>%</span></div></div>
+        <input id="ci" type="range" min="80" max="99.8" step="0.1" value="95">
+        <div class="presets"><button type="button" data-ci="90">90 %</button><button type="button" data-ci="95">95 %</button><button type="button" data-ci="99">99 %</button></div>
+        <small id="ciTxt"></small>
+      </div>
+      <div class="sl">
+        <div class="top"><label for="m">NI-gräns Δ</label><div class="box"><input id="mB" type="number" min="0.5" max="25" step="0.5" aria-label="NI-gräns i procentenheter"><span>pe</span></div></div>
+        <input id="m" type="range" min="0.5" max="25" step="0.5" value="5">
+        <small id="mTxt"></small>
+      </div>
+      <div class="sl">
+        <div class="top"><label for="pw">Power</label><div class="box"><input id="pwB" type="number" min="50" max="99" step="1" aria-label="Power i procent"><span>%</span></div></div>
+        <input id="pw" type="range" min="50" max="99" step="1" value="80">
+        <div class="presets"><button type="button" data-pw="80">80 %</button><button type="button" data-pw="90">90 %</button></div>
+        <small>Chansen att visa NI om den förväntade skillnaden stämmer.</small>
+      </div>
+      <div class="sl">
+        <div class="top"><label for="dr">Förväntat bortfall</label><div class="box"><input id="drB" type="number" min="0" max="50" step="1" aria-label="Bortfall i procent"><span>%</span></div></div>
+        <input id="dr" type="range" min="0" max="50" step="1" value="10">
+        <small>FP som inte går att följa upp. Påverkar bara hur många som rekryteras.</small>
+      </div>
+    </div>
+
+    <div class="say" id="say"></div>
+  </div>
+
+  <!-- R OCH STATA -->
+  <section id="r-stata">
+    <h2>Samma beräkning i R och Stata</h2>
+    <p>Koden nedan uppdateras med de värden du har valt i räknaren, så du kan kopiera den rakt in. Räknaren använder samma formel som R-paketet <span class="mono">epiR</span> (funktionen <span class="mono">epi.ssninfb</span>) och som Stata-kommandot <span class="mono">artbin</span> med Wald-test. Med samma indata ska alla tre ge exakt samma antal FP.</p>
+
+    <h3 style="margin-top:18px">R, med paketet epiR</h3>
+    <div class="code"><pre id="codeR"></pre><button type="button" data-copy="codeR">Kopiera</button></div>
+    <div class="terms">
+      <dl class="term"><dt>Vänd på incidensen</dt><dd><span class="mono">epiR</span> utgår från att högre andel är bättre. När händelsen är något dåligt, som infektion, anger man därför andelen <b>utan</b> händelse: 1 − kumulativ incidens.</dd></dl>
+      <dl class="term"><dt>alpha är ensidigt</dt><dd>I <span class="mono">epi.ssninfb</span> är <span class="mono">alpha</span> ensidigt. 95 %-konfidensintervall motsvarar därför <span class="mono">alpha = 0.025</span>. Standardvärdet i funktionen är 0.05, vilket motsvarar 90 %-konfidensintervall.</dd></dl>
+      <dl class="term"><dt>Svaret</dt><dd><span class="mono">n.treat</span> och <span class="mono">n.control</span> är FP per grupp. Bortfall räknas inte med, så dela själv med (1 − bortfall).</dd></dl>
+    </div>
+    <p style="margin-top:12px">Utan paket, med bara formeln i vanlig R:</p>
+    <div class="code"><pre id="codeRbase"></pre><button type="button" data-copy="codeRbase">Kopiera</button></div>
+
+    <h3 style="margin-top:18px">Stata, med kommandot artbin</h3>
+    <div class="code"><pre id="codeS"></pre><button type="button" data-copy="codeS">Kopiera</button></div>
+    <div class="terms">
+      <dl class="term"><dt>artbin i stället för power</dt><dd>Statas inbyggda kommando <span class="mono">power twoproportions</span> har ingen NI-gräns. <span class="mono">artbin</span> är gratis och installeras från SSC med <span class="mono">ssc install artbin</span>.</dd></dl>
+      <dl class="term"><dt>Viktiga tillägg</dt><dd><span class="mono">onesided</span> gör alpha ensidigt (annars halveras det). <span class="mono">unfavourable</span> säger att händelsen är dålig. <span class="mono">wald</span> ger samma test som räknaren. <span class="mono">ltfu()</span> är bortfall.</dd></dl>
+      <dl class="term"><dt>Utan wald</dt><dd>Standard i <span class="mono">artbin</span> är ett score-test (Farrington–Manning-typ). Det ger ofta ett något annorlunda n än räknaren, epiR och Wald-varianten.</dd></dl>
+    </div>
+
+    <h3 style="margin-top:18px">Kontrollvärden</h3>
+    <p>Formeln i räknaren är kontrollerad mot källkoden i <span class="mono">epiR</span> version 2.0.99 och mot exemplen i dokumentationen för <span class="mono">epiR</span> och <span class="mono">artbin</span>.</p>
+    <div class="tbl"><table class="cal">
+      <tr><th>Indata</th><th>Räknaren</th><th>Referens</th><th></th></tr>
+      <tr><td>Incidens 35 % mot 35 %, Δ 5 procentenheter, ensidigt α 5 %, power 90 %</td><td class="num">1 559 per grupp</td><td>Exempel i <span class="mono">epiR</span>: 1 559 per grupp</td><td class="ok">Stämmer</td></tr>
+      <tr><td>Andel 70 % mot 75 % (högre är bättre), Δ 10 procentenheter, tvåsidigt α 5 %, power 80 %, fördelning 1:2, bortfall 20 %, Wald-test</td><td>Samma formel räknad för hand (räknaren har bara lika stora grupper): 133 och 266</td><td>Exempel i artikeln om <span class="mono">artbin</span>: 133 och 266, totalt 399</td><td class="ok">Stämmer</td></tr>
+      <tr><td>Incidens 10 % mot 10 %, Δ 5 procentenheter, 95 %-konfidensintervall, power 80 %</td><td class="num">566 per grupp</td><td>Samma formel i R</td><td class="ok">Stämmer</td></tr>
+    </table></div>
+    <p style="margin-top:12px">Utan licens till Stata kan du räkna i R, som är gratis, eller i Sealed Envelopes webbräknare för binära NI-studier. Den använder samma formel som <span class="mono">epiR</span>.</p>
+    <ul>
+      <li><a href="https://cran.r-project.org/package=epiR" target="_blank" rel="noopener">epiR på CRAN</a></li>
+      <li><a href="https://journals.sagepub.com/doi/full/10.1177/1536867X231161971" target="_blank" rel="noopener">artbin: Extended sample size for randomized trials with binary outcomes (Stata Journal 2023)</a></li>
+      <li><a href="https://www.sealedenvelope.com/power/binary-noninferior/" target="_blank" rel="noopener">Sealed Envelope: Power calculator for binary outcome non-inferiority trial</a></li>
+    </ul>
+  </section>
+
+  <!-- EN- OCH TVÅSIDIGT -->
+  <section>
+    <h2>Ensidig och tvåsidig signifikansnivå vid NI</h2>
+    <p>Frågan i en NI-studie har bara en riktning: är den nya behandlingen <b>för mycket sämre</b>? Om den är bättre spelar ingen roll för NI-slutsatsen. Därför är testet i grunden <b>ensidigt</b>, och hela α ligger på den sida där Δ finns. Det är den röda ytan i figuren.</p>
+    <p>I praktiken redovisar man ändå ett vanligt <b>tvåsidigt konfidensintervall</b>, och de två sätten ger exakt samma slutsats. Ett tvåsidigt 95 %-konfidensintervall lämnar 2,5 % utanför i varje ände. Bara den övre änden jämförs med Δ. Att "övre gränsen i 95 %-konfidensintervall ligger under Δ" är därför samma sak som ett ensidigt test med α = 2,5 %.</p>
+    <div class="tbl"><table>
+      <tr><th>Tvåsidigt konfidensintervall</th><th>Ensidigt α för NI</th><th>z<sub>1−α</sub></th><th>Används</th></tr>
+      <tr><td class="num">90 %</td><td class="num">5 %</td><td class="num">1,645</td><td>Ekvivalensstudier (TOST), vissa tidiga studier. Sällan godkänt för NI hos läkemedelsmyndigheter.</td></tr>
+      <tr class="hl"><td class="num">95 %</td><td class="num">2,5 %</td><td class="num">1,960</td><td>Standard. Rekommenderas av EMA, FDA och ICH E9.</td></tr>
+      <tr><td class="num">97,5 %</td><td class="num">1,25 %</td><td class="num">2,241</td><td>Vid flera jämförelser, till exempel två doser mot standard.</td></tr>
+      <tr><td class="num">99 %</td><td class="num">0,5 %</td><td class="num">2,576</td><td>Strängt krav, till exempel när en enda studie ska räcka.</td></tr>
+    </table></div>
+    <div class="terms" style="margin-top:14px">
+      <dl class="term"><dt>Varför inte ensidigt 5 %?</dt><dd>En vanlig superioritetsstudie testas tvåsidigt på 5 %. Bara 2,5 % av det ligger på den sida där man skulle påstå nytta. Ensidigt 2,5 % i NI håller alltså samma stränghet som en vanlig studie. Ensidigt 5 % (90 %-konfidensintervall) vore dubbelt så tillåtande mot att godkänna en sämre behandling.</dd></dl>
+      <dl class="term"><dt>Vad den andra änden används till</dt><dd>Den nedre konfidensgränsen påverkar inte NI. Ligger hela 95 %-konfidensintervall under 0 kan man dessutom säga att ny är <b>bättre</b>. Det får man göra utan extra straff för multipla test, om det är förspecificerat i ordningen NI först och sedan superioritet.</dd><span class="ex"></span></dl>
+      <dl class="term"><dt>Ekvivalens är annorlunda</dt><dd>Vid ekvivalens ska ny vara varken sämre eller bättre än ±Δ. Då görs två ensidiga test (TOST), ofta på 5 % vardera, vilket motsvarar att hela 90 %-konfidensintervall ska ligga inom −Δ till +Δ.</dd></dl>
+      <dl class="term"><dt>Vad det gör med n</dt><dd>Byt konfidensnivån i reglaget ovan. Från 95 % till 90 % minskar n med ungefär 20 %. Från 95 % till 99 % ökar n med ungefär 50 %.</dd></dl>
+    </div>
+  </section>
+
+  <!-- konfidensintervall -->
+  <section>
+    <h2>Så läses resultatet efter studien</h2>
+    <p>När studien är klar räknas skillnaden i kumulativ incidens ut med 95 %-konfidensintervall. NI är visat om <b>hela intervallet ligger till vänster om Δ</b>. Sex tänkta studier med Δ = 5 procentenheter:</p>
+    <div class="panel scroll"><svg id="ciFig" viewBox="0 0 700 340" role="img" aria-label="Sex konfidensintervall för skillnaden i kumulativ incidens jämförda med noll och NI-gränsen"></svg></div>
+    <div class="terms" style="margin-top:10px">
+      <dl class="term"><dt>A–C: NI visat</dt><dd>Hela konfidensintervallet ligger under +5. A är dessutom bättre än standard eftersom konfidensintervallet ligger helt under 0.</dd></dl>
+      <dl class="term"><dt>C: NI trots att ny är sämre</dt><dd>Ny ger statistiskt fler infektioner (konfidensintervallet utesluter 0), men högst 4,5 procentenheter fler. Det har man i förväg sagt är acceptabelt. Vanlig tentafråga.</dd></dl>
+      <dl class="term"><dt>D–E: inkonklusivt</dt><dd>Konfidensintervallet korsar Δ. D är oftast en för liten studie med brett konfidensintervall. Man kan varken säga att ny är acceptabel eller att den är sämre.</dd></dl>
+      <dl class="term"><dt>F: ny är sämre</dt><dd>Hela konfidensintervallet ligger över Δ. Den nya behandlingen ger fler infektioner än vad som accepteras.</dd></dl>
+    </div>
+  </section>
+
+  <!-- BEGREPP -->
+  <section>
+    <h2>Begreppen</h2>
+    <div class="terms">
+      <dl class="term"><dt>Kumulativ incidens</dt><dd>Andelen av gruppen som får händelsen under en bestämd tid. 10 % infektion inom 30 dagar betyder att 10 av 100 opererade får en infektion inom 30 dagar.<span class="ex">Samma sak som risk. Kräver att alla följs hela tiden, annars används Kaplan–Meier.</span></dd></dl>
+      <dl class="term"><dt>Riskskillnad (RD)</dt><dd>Kumulativ incidens i ny grupp minus i standardgruppen, i procentenheter. 12 % − 10 % = +2 procentenheter.<span class="ex">Positivt = ny ger fler händelser, alltså sämre när händelsen är något dåligt.</span></dd></dl>
+      <dl class="term"><dt>Procentenheter (pe)</dt><dd>Absolut skillnad mellan två procentsatser. Från 10 % till 15 % är 5 procentenheter men 50 procent i relativ ökning.</dd></dl>
+      <dl class="term"><dt>Non-inferiority</dt><dd>Studien ska visa att en ny behandling inte är sämre än standard med mer än en förutbestämd mängd. Används när den nya har andra fördelar: billigare, kortare, säkrare, enklare.</dd></dl>
+      <dl class="term"><dt>NI-gräns Δ</dt><dd>Den största försämringen som är kliniskt acceptabel med tanke på fördelarna. Bestäms innan studien och kan inte ändras efteråt.</dd></dl>
+      <dl class="term"><dt>H0 och H1</dt><dd>H0: ny är sämre med minst Δ (RD ≥ Δ). H1: ny är inte sämre än Δ (RD &lt; Δ). Man försöker förkasta H0.<span class="ex">Omvänt mot en vanlig studie, där H0 är "ingen skillnad".</span></dd></dl>
+      <dl class="term"><dt>α, typ I-fel</dt><dd>Risken att visa NI fast ny i själva verket är Δ sämre. Det farliga felet i NI, eftersom patienter då får en sämre behandling.</dd></dl>
+      <dl class="term"><dt>β och power</dt><dd>β är risken att inte visa NI fast ny är så bra som man tror. Power = 1 − β.</dd></dl>
+      <dl class="term"><dt>Standardfel (SE)</dt><dd>Hur mycket skattningen av RD varierar mellan tänkta upprepade studier. Bredden på kurvorna och halva konfidensintervallets bredd delat med z.<span class="ex">Fyra gånger fler FP ger halva SE.</span></dd></dl>
+      <dl class="term"><dt>ITT och per-protokoll</dt><dd>ITT analyserar alla som randomiserats, per-protokoll bara de som fick behandlingen som planerat. I NI ska båda visa NI.<span class="ex">Slarv och överkorsning gör grupperna mer lika, vilket i NI gör det lättare att felaktigt visa NI.</span></dd></dl>
+    </div>
+  </section>
+
+  <!-- Δ -->
+  <section>
+    <h2>Vilken skillnad är kliniskt acceptabel?</h2>
+    <p>Δ är det viktigaste valet i en NI-studie och styr antalet FP mer än något annat. Halveras Δ krävs ungefär fyra gånger så många. Myndigheterna (FDA och EMA) beskriver två steg:</p>
+    <ol class="steps">
+      <li><div><b>M1: hur mycket bättre standard är än placebo eller ingen behandling.</b> Hämtas från tidigare randomiserade studier eller en metaanalys. Man tar den försiktiga änden av konfidensintervallet, inte punktskattningen. Exempel: utan profylax får 25 % infektion, med standard 10 %. Effekten är 15 procentenheter, 95 %-konfidensintervall 10 till 20. M1 = 10.</div></li>
+      <li><div><b>M2: hur stor del av den effekten ny måste behålla.</b> Ofta minst 50 %. Med M1 = 10 och 50 % bevarat blir M2 = 5 procentenheter. Då är ny med säkerhet bättre än ingen behandling.</div></li>
+      <li><div><b>Klinisk bedömning.</b> Är 5 procentenheter fler infektioner värt fördelarna med den nya behandlingen? Fråga kliniker och gärna patienter. Δ får vara mindre än M2, aldrig större.</div></li>
+    </ol>
+    <div class="panel helper">
+      <div class="sl"><label for="m1">M1</label><div class="box"><input id="m1" type="number" min="0.5" max="60" step="0.5" value="10"><span>pe</span></div></div>
+      <div class="sl"><label for="keep">Effekt som ska bevaras</label><div class="box"><input id="keep" type="number" min="0" max="95" step="5" value="50"><span>%</span></div></div>
+      <div class="sl"><span style="font-weight:500">M2, största Δ</span><div class="big" style="font-size:1.6rem" id="m2">–</div></div>
+      <button id="useM2" type="button">Använd som NI-gräns</button>
+    </div>
+  </section>
+
+  <!-- FORMEL -->
+  <section>
+    <h2>Formeln bakom räknaren</h2>
+    <div class="formula">FP per grupp = (z<sub>1−α</sub> + z<sub>1−β</sub>)² · [p<sub>std</sub>(1 − p<sub>std</sub>) + p<sub>ny</sub>(1 − p<sub>ny</sub>)] / (Δ − (p<sub>ny</sub> − p<sub>std</sub>))²</div>
+    <div class="tbl"><table>
+      <tr><th>Del</th><th>Betyder</th><th>Effekt på n</th></tr>
+      <tr><td class="mono">z<sub>1−α</sub></td><td>Från konfidensnivån: ensidigt α = (100 − konfidensnivå) / 2. 95 %-konfidensintervall ger 1,96</td><td>Högre konfidensnivå ger större n</td></tr>
+      <tr><td class="mono">z<sub>1−β</sub></td><td>0,84 vid 80 % power, 1,28 vid 90 %</td><td>Högre power ger större n</td></tr>
+      <tr><td class="mono">p(1 − p)</td><td>Variansen i varje grupp</td><td>Störst vid 50 %, liten vid sällsynta händelser</td></tr>
+      <tr><td class="mono">Δ − (p<sub>ny</sub> − p<sub>std</sub>)</td><td>Avståndet mellan H0 och H1 i figuren</td><td>Står i kvadrat: halverat avstånd ger fyra gånger n</td></tr>
+    </table></div>
+    <p style="margin-top:12px" id="worked"></p>
+  </section>
+
+  <p class="foot">Normalapproximation för skillnad mellan två andelar med lika stora grupper och ej poolad varians. Program som PASS, nQuery eller Stata <span class="mono">power</span> (till exempel med Farrington–Manning-metoden) kan ge något annorlunda n, framför allt vid små andelar. Exemplet med profylax är påhittat för undervisning.</p>
+</div>
+
+<script>
+// Inversa normalfördelningen (Acklam)
+function qnorm(p){const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],c=[-0.007784894002430293,-0.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],d=[0.007784695709041462,0.3224671290700398,2.445134137142996,3.754408661907416],pl=0.02425;let q,r;
+if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+q=p-0.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)}
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x))}
+const Phi=z=>0.5*(1+erf(z/Math.SQRT2));
+const $=id=>document.getElementById(id);
+const dec=(v,n=1)=>String(+(+v).toFixed(n)).replace('.',',');
+const pe=(v,n=1)=>{const a=Math.abs(v)<1e-9?0:v;return (a>0?'+':a<0?'−':'')+dec(Math.abs(a),n)};
+const num=v=>Math.round(v).toLocaleString('sv-SE');
+const clamp=(v,lo,hi)=>Math.min(Math.max(v,lo),hi);
+
+// koppla reglage och sifferruta
+function pair(id,lo,hi){const s=$(id),b=$(id+'B');b.value=s.value;
+  s.addEventListener('input',()=>{b.value=s.value;calc()});
+  b.addEventListener('input',()=>{const v=parseFloat(String(b.value).replace(',','.'));if(isNaN(v))return;s.value=clamp(v,lo,hi);calc(clamp(v,lo,hi),id)});
+  b.addEventListener('change',()=>{b.value=s.value});}
+pair('ci',80,99.8);pair('m',0.5,25);pair('pw',50,99);
+function setVal(id,v){$(id).value=v;$(id+'B').value=v;calc()}
+document.querySelectorAll('[data-ci]').forEach(b=>b.addEventListener('click',()=>setVal('ci',b.dataset.ci)));
+document.querySelectorAll('[data-pw]').forEach(b=>b.addEventListener('click',()=>setVal('pw',b.dataset.pw)));
+pair('p0',0.5,60);pair('p1',0.5,60);pair('dr',0,50);
+$('same').addEventListener('click',()=>setVal('p1',$('p0').value));
+
+let S={};
+function calc(ov,ovId){
+  const g=id=>(ovId===id?ov:+$(id).value);
+  const ci=g('ci')/100, M=g('m')/100, pw=g('pw')/100;
+  const p0=g('p0')/100, p1=g('p1')/100, dr=g('dr')/100;
+  const a1=(1-ci)/2, za=qnorm(1-a1), zb=qnorm(pw);
+  const v=p0*(1-p0)+p1*(1-p1), d=p1-p0, gap=M-d, ok=gap>1e-9;
+  const n=ok?Math.ceil((za+zb)**2*v/gap**2):Infinity;
+  S={ci,M,pw,p0,p1,dr,a1,za,zb,v,d,gap,ok,n};
+  $('ciTxt').innerHTML=`Tvåsidigt ${dec(ci*100)} %-konfidensintervall = ensidigt α ${dec(a1*100,2)} %. NI visas om övre konfidensgränsen ligger under Δ.`;
+  $('mTxt').textContent=`Ny får ge högst ${dec(M*100)} pe fler händelser, alltså högst ${dec((p0+M)*100)} % i stället för ${dec(p0*100)} %.`;
+  $('p1Txt').textContent=Math.abs(d)<1e-9?'Ny väntas vara lika bra som standard. Vanligast i NI-studier.':d>0?`Ny väntas ge ${dec(d*100)} pe fler händelser. Avståndet till NI-gränsen krymper och n ökar.`:`Ny väntas ge ${dec(-d*100)} pe färre händelser. Avståndet till NI-gränsen växer och n minskar.`;
+  $('aa').textContent=`${dec(ci*100)} % ↔ ${dec(a1*100,2)} %`;
+  $('zz').textContent=`${za.toFixed(3).replace('.',',')} · ${zb.toFixed(3).replace('.',',')}`;
+  if(!ok){
+    $('nreq').innerHTML='<span class="warn" style="font-size:1.4rem">Går inte</span>';
+    $('ntot').textContent='–';$('nrec').textContent='–';
+    $('say').innerHTML=`<span class="warn">Förväntad skillnad (${pe(d*100)} pe) är lika stor som eller större än NI-gränsen.</span> Ingen studiestorlek kan då visa NI. Öka Δ eller sänk förväntad incidens för ny behandling.`;
+    $('worked').textContent='';
+  } else {
+    const rec=Math.ceil(n/(1-dr));
+    $('nreq').innerHTML=`${num(n)}<small>FP</small>`;
+    $('ntot').textContent=num(2*n)+' FP';
+    $('nrec').textContent=`${num(rec)} per grupp, ${num(2*rec)} totalt`;
+    $('say').innerHTML=`Med <b>${num(n)} FP per grupp</b> har studien ${dec(pw*100,0)} % chans att visa att ny ger högst <b>${dec(M*100)} pe fler händelser</b> än standard, om ny i verkligheten ger ${dec(p1*100)} % mot standardens ${dec(p0*100)} %. Kravet är att den övre gränsen i <b>${dec(ci*100)} %-konfidensintervall</b> hamnar under +${dec(M*100)} pe.`;
+    $('worked').innerHTML=`Med dina siffror: (${za.toFixed(2).replace('.',',')} + ${zb.toFixed(2).replace('.',',')})² · [${p0.toFixed(3).replace('.',',')}·${(1-p0).toFixed(3).replace('.',',')} + ${p1.toFixed(3).replace('.',',')}·${(1-p1).toFixed(3).replace('.',',')}] / ${gap.toFixed(3).replace('.',',')}² ≈ <b>${num(n)} FP per grupp</b>. Med ${dec(dr*100)} % bortfall rekryteras ${num(rec)} per grupp.`;
+  }
+  draw();code();
+}
+
+function code(){
+  const {p0,p1,M,a1,pw,dr,ok,n}=S;const f=(v,k=4)=>String(+v.toFixed(k));
+  const R=`# install.packages("epiR")   # bara första gången
+library(epiR)
+
+epi.ssninfb(treat   = 1 - ${f(p1)},   # andel UTAN händelse, ny behandling
+            control = 1 - ${f(p0)},   # andel UTAN händelse, standard
+            delta   = ${f(M)},          # NI-gräns (${dec(M*100)} procentenheter)
+            n = NA, power = ${f(pw,3)}, r = 1,
+            alpha   = ${f(a1,5)})         # ensidigt alfa
+${ok?`# Väntat svar: n.treat = n.control = ${n}`:'# Förväntad skillnad ligger på eller över NI-gränsen: går inte att räkna'}`;
+  const Rb=`p_std <- ${f(p0)}; p_ny <- ${f(p1)}; delta <- ${f(M)}
+alpha <- ${f(a1,5)}; power <- ${f(pw,3)}; bortfall <- ${f(dr,3)}
+
+n <- (qnorm(1 - alpha) + qnorm(power))^2 *
+     (p_std * (1 - p_std) + p_ny * (1 - p_ny)) / (delta - (p_ny - p_std))^2
+ceiling(n)                       # FP per grupp${ok?`, väntat ${n}`:''}
+ceiling(ceiling(n) / (1 - bortfall))   # att rekrytera per grupp${ok?`, väntat ${Math.ceil(n/(1-dr))}`:''}`;
+  const St=`* ssc install artbin   // bara första gången
+artbin, pr(${f(p0)} ${f(p1)}) margin(${f(M)}) alpha(${f(a1,5)}) onesided ///
+    power(${f(pw,3)}) unfavourable wald${dr>0?` ltfu(${f(dr,3)})`:''}
+${ok?`* Väntat svar: ${n} per grupp utan bortfall${dr>0?`, ${Math.ceil(n/(1-dr))} per grupp med bortfall`:''}`:'* Förväntad skillnad ligger på eller över NI-gränsen'}`;
+  $('codeR').textContent=R;$('codeRbase').textContent=Rb;$('codeS').textContent=St;
+}
+document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>{
+  const el=$(b.dataset.copy);const done=()=>{b.textContent='Kopierat';setTimeout(()=>b.textContent='Kopiera',1500)};
+  const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Markerat, tryck Ctrl+C';setTimeout(()=>b.textContent='Kopiera',2500)};
+  try{navigator.clipboard.writeText(el.textContent).then(done,sel)}catch(e){sel()}
+}));
+
+function draw(){
+  const {M,v,d,ok,n,za,zb,a1,ci,pw}=S;
+  const L=56,R=744,T=92,B=236;
+  const t=(x,y,s,c,an='middle',sz=12,w=400)=>`<text x="${x}" y="${y}" text-anchor="${an}" font-size="${sz}" font-weight="${w}" fill="var(${c})" font-family="Figtree,sans-serif">${s}</text>`;
+  if(!ok){$('fig').innerHTML=t(380,150,'Förväntad skillnad ligger på eller över NI-gränsen. Ingen figur att visa.','--alpha','middle',14,500);return}
+  const se=Math.sqrt(v/n);
+  const pad=Math.max(3.4*se,0.25*(M-d));
+  const lo=Math.min(d,0)-pad, hi=M+pad;
+  const sx=x=>L+(x-lo)/(hi-lo)*(R-L);
+  const yy=(x,m)=>B-(B-T-14)*Math.exp(-0.5*((x-m)/se)**2);
+  const area=(m,a,b)=>{a=Math.max(a,lo);b=Math.min(b,hi);if(b<=a)return'';let p=`M${sx(a)},${B}`;for(let i=0;i<=100;i++){const x=a+(b-a)*i/100;p+=` L${sx(x).toFixed(1)},${yy(x,m).toFixed(1)}`}return p+` L${sx(b)},${B} Z`};
+  const curve=m=>{let p='';for(let i=0;i<=300;i++){const x=lo+(hi-lo)*i/300;p+=(i?' L':'M')+sx(x).toFixed(1)+','+yy(x,m).toFixed(1)}return p};
+  const c=M-za*se;
+  let g='';
+  // stor siffra i figuren
+  g+=t(L,26,`${num(n)} FP per grupp`,'--fg','start',20,600);
+  g+=t(L,46,`${dec(ci*100)} %-konfidensintervall (ensidigt α ${dec(a1*100,2)} %) · power ${dec(pw*100,0)} % · Δ = ${dec(M*100)} pe · SE = ${dec(se*100,2)} pe`,'--muted','start',12);
+  // typiskt konfidensintervall
+  const yk=72, up=d+za*se, dn=d-za*se;
+  g+=`<line x1="${sx(Math.max(dn,lo))}" x2="${sx(Math.min(up,hi))}" y1="${yk}" y2="${yk}" stroke="var(--h1)" stroke-width="3" stroke-linecap="round"/><circle cx="${sx(d)}" cy="${yk}" r="4.5" fill="var(--h1)"/>`;
+  g+=t(sx(Math.max(dn,lo))-8,yk+4,`Typiskt resultat med ${dec(ci*100)} %-konfidensintervall`,'--h1','end',11);
+  if(sx(Math.max(dn,lo))-8<L+190){/* flytta text om den inte får plats */g=g.replace(/<text[^>]*>Typiskt resultat[^<]*<\/text>/,'');g+=t(sx(d),yk-10,`Typiskt resultat med ${dec(ci*100)} %-konfidensintervall`,'--h1','middle',11);}
+  // ticks
+  const span=(hi-lo)*100, raw=span/7, mag=10**Math.floor(Math.log10(raw)), st=[1,2,2.5,5,10].map(k=>k*mag).find(k=>k>=raw)/100;
+  for(let x=Math.ceil(lo/st-1e-9)*st;x<=hi+1e-9;x+=st){g+=`<line x1="${sx(x)}" x2="${sx(x)}" y1="${B}" y2="${B+5}" stroke="var(--muted)"/>`+t(sx(x),B+19,pe(x*100,st*100<1?2:1),'--muted','middle',11)}
+  g+=`<path d="${area(M,lo,c)}" fill="var(--alpha)" fill-opacity="0.5"/>`;
+  g+=`<path d="${area(d,c,hi)}" fill="var(--beta)" fill-opacity="0.5"/>`;
+  g+=`<path d="${area(d,lo,c)}" fill="var(--power)" fill-opacity="0.28"/>`;
+  g+=`<path d="${curve(M)}" fill="none" stroke="var(--h0)" stroke-width="2"/>`;
+  g+=`<path d="${curve(d)}" fill="none" stroke="var(--h1)" stroke-width="2"/>`;
+  if(0>lo)g+=`<line x1="${sx(0)}" x2="${sx(0)}" y1="${T}" y2="${B}" stroke="var(--line)" stroke-width="1.5"/>`;
+  g+=`<line x1="${sx(M)}" x2="${sx(M)}" y1="${yk-14}" y2="${B}" stroke="var(--margin)" stroke-width="2"/>`;
+  g+=`<line x1="${sx(c)}" x2="${sx(c)}" y1="${T-4}" y2="${B}" stroke="var(--fg)" stroke-dasharray="4 3"/>`;
+  g+=t(sx(M)+6,T+6,`H0: Δ = +${dec(M*100)}`,'--h0','start',12,500);
+  g+=t(sx(d)-6,T+6,`H1: ${pe(d*100)}`,'--h1','end',12,500);
+  g+=t(sx(c),B-8,`${pe(c*100,2)}`,'--fg','middle',11);
+  g+=t(L+6,B-8,'← NI visas','--power','start',11,500);
+  g+=t(R-6,B-8,'NI visas inte →','--muted','end',11);
+  g+=`<line x1="${L}" x2="${R}" y1="${B}" y2="${B}" stroke="var(--muted)"/>`;
+  g+=t((L+R)/2,B+40,'Skillnad i kumulativ incidens, ny − standard (procentenheter)','--fg','middle',13);
+  g+=t((L+R)/2,B+60,`Streckad linje = gränsvärdet ${pe(c*100,2)} pe = Δ − z·SE. Till vänster om den ligger övre konfidensgränsen under Δ.`,'--muted','middle',11);
+  $('fig').innerHTML=g;
+}
+
+// figur med konfidensintervall
+(function(){
+  const L2=250,R2=680,T2=44,X0=-6,X1=12,M=5;
+  const cx=x=>L2+(x-X0)/(X1-X0)*(R2-L2);
+  const rows=[['A','Bättre än standard (och NI)',-3,-5.5,-0.5,'--power'],['B','NI visat',0,-2.8,2.8,'--power'],['C','NI, men statistiskt sämre',2.5,0.5,4.5,'--power'],['D','Inkonklusivt',1,-3,7,'--beta'],['E','Inkonklusivt',5,2.5,7.5,'--beta'],['F','Sämre än acceptabelt',8.5,6,11,'--alpha']];
+  const t=(x,y,s,c,an='middle',sz=12)=>`<text x="${x}" y="${y}" text-anchor="${an}" font-size="${sz}" fill="var(${c})" font-family="Figtree,sans-serif">${s}</text>`;
+  const step=42,B2=T2+rows.length*step;
+  let g=`<rect x="${cx(X0)}" y="${T2-16}" width="${cx(M)-cx(X0)}" height="${B2-T2+6}" fill="var(--power)" fill-opacity="0.07"/>`;
+  g+=`<line x1="${cx(M)}" x2="${cx(M)}" y1="${T2-16}" y2="${B2-10}" stroke="var(--margin)" stroke-width="2"/>`;
+  g+=`<line x1="${cx(0)}" x2="${cx(0)}" y1="${T2-16}" y2="${B2-10}" stroke="var(--muted)" stroke-dasharray="4 3"/>`;
+  g+=t(cx(M),T2-22,'Δ = +5','--margin');g+=t(cx(0),T2-22,'0','--muted');
+  rows.forEach((r,i)=>{const y=T2+i*step+6;
+    g+=t(8,y+4,`<tspan font-weight="600">${r[0]}</tspan>  ${r[1]}`,'--fg','start',13);
+    g+=`<line x1="${cx(r[3])}" x2="${cx(r[4])}" y1="${y}" y2="${y}" stroke="var(${r[5]})" stroke-width="3" stroke-linecap="round"/><circle cx="${cx(r[2])}" cy="${y}" r="5" fill="var(${r[5]})"/>`;});
+  g+=`<line x1="${L2}" x2="${R2}" y1="${B2}" y2="${B2}" stroke="var(--muted)"/>`;
+  [-5,0,5,10].forEach(v=>{g+=`<line x1="${cx(v)}" x2="${cx(v)}" y1="${B2}" y2="${B2+5}" stroke="var(--muted)"/>`+t(cx(v),B2+19,v>0?'+'+v:v<0?'−'+(-v):'0','--muted')});
+  g+=t(L2,B2+42,'← ny ger färre infektioner','--muted','start');
+  g+=t(R2,B2+42,'ny ger fler infektioner →','--muted','end');
+  g+=t((L2+R2)/2,B2+62,'Skillnad i kumulativ incidens (procentenheter) med 95 %-konfidensintervall','--fg','middle',12);
+  $('ciFig').innerHTML=g;
+})();
+
+function m2(){const v=(+$('m1').value||0)*(1-(+$('keep').value||0)/100);$('m2').textContent=dec(v)+' pe';return v}
+['m1','keep'].forEach(id=>$(id).addEventListener('input',m2));
+$('useM2').addEventListener('click',()=>{const v=clamp(Math.round(m2()*2)/2,0.5,25);setVal('m',v);$('m').focus()});
+m2();calc();
+</script>
+
+</body></html>

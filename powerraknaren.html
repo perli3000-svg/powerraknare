@@ -1,0 +1,351 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Powerräknaren</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: en kolumn. 1) verktyget: val av utfall, resultat, reglage för effekten, figur, reglage för felrisker, 2) vad du anger, 3) R och Stata, 4) testkörning, 5) formel och figurläsning */
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --soft:#eef1f6; --fg:#1b2230; --muted:#5b6475; --line:#d9dde5;
+  --h0:#6b7385; --h1:#2f5fb3; --alpha:#d0473d; --beta:#d89a1c; --power:#2e8b57;
+  --display:"Newsreader",Georgia,serif; --body:"Figtree",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161d; --panel:#1a2029; --soft:#222a35; --fg:#e7eaf0; --muted:#9aa3b4; --line:#2e3644;
+  --h0:#9aa3b4; --h1:#7ea6f0; --alpha:#ee6d62; --beta:#e8b545; --power:#5cc58a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161d; --panel:#1a2029; --soft:#222a35; --fg:#e7eaf0; --muted:#9aa3b4; --line:#2e3644;
+  --h0:#9aa3b4; --h1:#7ea6f0; --alpha:#ee6d62; --beta:#e8b545; --power:#5cc58a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 48px;padding-inline:16px}
+h1{font-family:var(--display);font-weight:500;font-size:2.2rem;line-height:1.15;margin:0 0 6px;text-wrap:balance}
+h2{font-family:var(--display);font-weight:500;font-size:1.4rem;margin:0 0 8px;text-wrap:balance}
+h3{font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.lede{color:var(--muted);max-width:68ch;margin:0 0 24px}
+p{max-width:72ch;margin:0 0 10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+section{margin-top:40px}
+.switch{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding-top:14px}
+.swl{font-weight:600}
+.switch small{color:var(--muted);font-size:.85rem;flex-basis:100%}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg button{font:inherit;font-size:.92rem;padding:7px 14px;border:0;background:var(--panel);color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--h1);color:var(--panel);font-weight:500}
+.res{display:flex;flex-wrap:wrap;gap:14px 36px;align-items:flex-end;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.big{font-family:var(--mono);font-size:2.2rem;line-height:1;font-variant-numeric:tabular-nums;font-weight:500}
+.big small{font-size:.95rem;color:var(--muted);font-weight:400;margin-left:6px;font-family:var(--body)}
+.kv{display:grid;grid-template-columns:auto auto;gap:2px 16px;font-size:.92rem;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.say{background:var(--soft);border-radius:8px;padding:12px 14px;font-size:.95rem;margin-top:14px}
+.say b{font-weight:600}
+svg{width:100%;height:auto;display:block}
+.scroll{overflow-x:auto}
+.scroll svg{min-width:580px}
+#fig{max-height:46vh}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.86rem;color:var(--muted);margin-top:6px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.ln{display:inline-block;width:18px;height:0;border-top:2px solid;margin-right:6px;vertical-align:4px}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px 24px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.sliders.top{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));border-top:0;margin-top:0}
+.sl{display:flex;flex-direction:column;gap:4px;min-width:0}
+.sl .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sl label{font-weight:500}
+.sl small{color:var(--muted);font-size:.8rem;line-height:1.35}
+.sl input[type=range]{width:100%;accent-color:var(--h1)}
+.box{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;background:var(--panel);overflow:hidden;width:116px;flex:none}
+.box input{width:100%;min-width:0;font:inherit;font-family:var(--mono);font-size:.95rem;padding:5px 8px;border:0;background:transparent;color:var(--fg);text-align:right}
+.box span{padding:0 8px;color:var(--muted);font-size:.8rem;background:var(--soft);align-self:stretch;display:flex;align-items:center}
+select{font:inherit;font-size:.9rem;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--h1);outline-offset:1px}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.presets button{font:inherit;font-size:.8rem;padding:3px 9px;border-radius:6px;border:1px solid var(--line);background:var(--soft);color:var(--fg);cursor:pointer}
+.presets button.rec{border-color:var(--power)}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 28px}
+.term{padding:12px 0;border-bottom:1px solid var(--line);min-width:0;margin:0}
+.term dt{font-weight:600;margin-bottom:2px}
+.term dd{margin:0;font-size:.95rem}
+.term .ex{display:block;color:var(--muted);font-size:.88rem;margin-top:4px}
+.tag{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--power);border:1px solid var(--power);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px}
+.mono{font-family:var(--mono)}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+.tbl{overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.ok{color:var(--power);font-weight:500}
+th{font-weight:500;color:var(--muted);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase}
+.code{position:relative;margin:6px 0 12px}
+.code pre{margin:0;font-family:var(--mono);font-size:.86rem;line-height:1.55;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre}
+.code button{position:absolute;top:8px;right:8px;font:inherit;font-size:.78rem;padding:3px 9px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+.formula{font-family:var(--mono);font-size:.9rem;background:var(--soft);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:nowrap;margin:8px 0 10px}
+[hidden]{display:none!important}
+.foot{margin-top:36px;color:var(--muted);font-size:.85rem;max-width:74ch}
+</style>
+
+<div class="wrap">
+  <h1>Powerräknaren</h1>
+  <p class="lede">Räknare för hur många forskningspersoner en studie behöver för att kunna visa en skillnad mellan två grupper. Du anger skillnaden du vill kunna upptäcka, spridningen, signifikansnivå och power. Räknaren ger antalet per grupp. Power 80 % och signifikansnivå 5 % är förvalda, eftersom det är de vanligaste valen. Dra i reglagen och se hur antalet och kurvorna ändras.</p>
+
+  <div class="panel">
+    <div class="res" aria-live="polite">
+      <div><h3>Behövs per grupp</h3><div class="big" id="nreq">–</div></div>
+      <dl class="kv">
+        <dt>Totalt, båda grupperna</dt><dd id="ntot">–</dd>
+        <dt>Att rekrytera med bortfall</dt><dd id="nrec">–</dd>
+        <dt id="esL">Effektstorlek</dt><dd id="es">–</dd>
+        <dt>Test</dt><dd id="test">–</dd>
+      </dl>
+    </div>
+
+    <div class="switch">
+      <span class="swl">Vad vill du ange?</span>
+      <div class="seg" role="group" aria-label="Vad vill du ange">
+        <button type="button" id="tProp" aria-pressed="true">Andelar i varje grupp</button>
+        <button type="button" id="tMean" aria-pressed="false">Skillnad och standardavvikelse</button>
+      </div>
+      <small id="swTxt"></small>
+    </div>
+    <!-- effekten: medelvärden -->
+    <div class="sliders top" id="effMean" hidden>
+      <div class="sl">
+        <div class="hd"><label for="dl">Skillnad du vill kunna upptäcka</label><div class="box"><input id="dlB" type="number" min="0.5" max="50" step="0.5" aria-label="Skillnad"><span>enheter</span></div></div>
+        <input id="dl" type="range" min="0.5" max="50" step="0.5" value="10">
+        <small>Den minsta skillnad mellan gruppernas medelvärden som är kliniskt viktig. Exempel: 10 mm på en smärtskala 0–100 mm.</small>
+      </div>
+      <div class="sl">
+        <div class="hd"><label for="sd">Standardavvikelse</label><div class="box"><input id="sdB" type="number" min="1" max="60" step="0.5" aria-label="Standardavvikelse"><span>enheter</span></div></div>
+        <input id="sd" type="range" min="1" max="60" step="0.5" value="20">
+        <small>Hur mycket värdena sprider sig mellan patienter i varje grupp. Hämtas från tidigare studier eller en pilotstudie. Samma enhet som skillnaden.</small>
+      </div>
+    </div>
+    <!-- effekten: andelar -->
+    <div class="sliders top" id="effProp">
+      <div class="sl">
+        <div class="hd"><label for="p1">Kumulativ incidens, kontrollgrupp</label><div class="box"><input id="p1B" type="number" min="1" max="95" step="0.5" aria-label="Kumulativ incidens kontrollgrupp"><span>%</span></div></div>
+        <input id="p1" type="range" min="1" max="95" step="0.5" value="10">
+        <small>Andelen med händelsen med nuvarande behandling. Från register eller tidigare studier.</small>
+      </div>
+      <div class="sl">
+        <div class="hd"><label for="p2">Kumulativ incidens, ny behandling</label><div class="box"><input id="p2B" type="number" min="1" max="95" step="0.5" aria-label="Kumulativ incidens ny behandling"><span>%</span></div></div>
+        <input id="p2" type="range" min="1" max="95" step="0.5" value="5">
+        <small id="p2Txt">Den andel du tror och vill kunna visa med den nya behandlingen.</small>
+      </div>
+    </div>
+
+    <div class="scroll" style="margin-top:10px"><svg id="fig" viewBox="0 0 760 300" role="img" aria-label="H0-kurva vid ingen skillnad och H1-kurva vid den skillnad du vill upptäcka, med ytor för alfa, beta och power"></svg></div>
+    <div class="legend">
+      <span><span class="ln" style="border-color:var(--h0)"></span>H0: ingen skillnad</span>
+      <span><span class="ln" style="border-color:var(--h1)"></span>H1: skillnaden du vill upptäcka</span>
+      <span><span class="ln" style="border-color:var(--fg);border-top-style:dashed"></span>Gränsvärde för signifikans</span>
+      <span><span class="sw" style="background:var(--alpha)"></span>α, typ I-fel</span>
+      <span><span class="sw" style="background:var(--beta)"></span>β, typ II-fel</span>
+      <span><span class="sw" style="background:var(--power)"></span>Power</span>
+    </div>
+
+    <div class="sliders">
+      <div class="sl">
+        <div class="hd"><label for="al">Signifikansnivå α</label><div class="box"><input id="alB" type="number" min="0.5" max="10" step="0.5" aria-label="Signifikansnivå"><span>%</span></div></div>
+        <input id="al" type="range" min="0.5" max="10" step="0.5" value="5">
+        <div class="presets"><button type="button" data-al="1">1 %</button><button type="button" data-al="5" class="rec">5 % förvalt</button><button type="button" data-al="10">10 %</button>
+          <select id="side" aria-label="Ensidigt eller tvåsidigt test"><option value="2" selected>Tvåsidigt</option><option value="1">Ensidigt</option></select></div>
+        <small>Risken att "hitta" en skillnad som inte finns. 5 % tvåsidigt är standard.</small>
+      </div>
+      <div class="sl">
+        <div class="hd"><label for="pw">Power</label><div class="box"><input id="pwB" type="number" min="50" max="99" step="1" aria-label="Power"><span>%</span></div></div>
+        <input id="pw" type="range" min="50" max="99" step="1" value="80">
+        <div class="presets"><button type="button" data-pw="80" class="rec">80 % förvalt</button><button type="button" data-pw="90">90 %</button></div>
+        <small>Chansen att studien visar skillnaden om den verkligen finns. 80 % är minimum, 90 % är vanligt i stora prövningar.</small>
+      </div>
+      <div class="sl">
+        <div class="hd"><label for="dr">Förväntat bortfall</label><div class="box"><input id="drB" type="number" min="0" max="50" step="1" aria-label="Bortfall"><span>%</span></div></div>
+        <input id="dr" type="range" min="0" max="50" step="1" value="10">
+        <small>Forskningspersoner som inte går att följa upp. Påverkar bara hur många som rekryteras.</small>
+      </div>
+    </div>
+
+    <div class="say" id="say"></div>
+  </div>
+
+  <!-- VAD DU ANGER -->
+  <section>
+    <h2>Det här behöver du ange, och varför</h2>
+    <div class="terms">
+      <dl class="term"><dt>Skillnad du vill kunna upptäcka</dt><dd>Den minsta skillnad som skulle ändra hur ni behandlar patienter, ofta kallad minsta kliniskt betydelsefulla skillnad. Den bestäms av klinisk bedömning och litteratur, inte av vad som ger lagom många forskningspersoner.<span class="ex">Halverad skillnad ger ungefär fyra gånger så många forskningspersoner.</span></dd></dl>
+      <dl class="term"><dt>Standardavvikelse</dt><dd>Spridningen mellan patienter i samma grupp. Hämtas från tidigare studier med liknande patienter eller från en pilotstudie. Välj hellre ett för högt än ett för lågt värde.<span class="ex">Dubbelt så stor standardavvikelse ger ungefär fyra gånger så många.</span></dd></dl>
+      <dl class="term"><dt>Kumulativ incidens i varje grupp</dt><dd>För andelar ersätter de två andelarna både skillnad och standardavvikelse. Spridningen följer av andelen själv: den är störst vid 50 % och liten vid sällsynta händelser.<span class="ex">Samma absoluta skillnad kräver fler forskningspersoner nära 50 % än nära 5 %.</span></dd></dl>
+      <dl class="term"><dt>Signifikansnivå α <span class="tag">förvalt 5 %</span></dt><dd>Risken för typ I-fel: att studien visar en skillnad som inte finns. 5 % är en konvention sedan Fisher och accepteras av tidskrifter och myndigheter. Tvåsidigt betyder att en skillnad åt båda håll räknas, så 2,5 % ligger i varje ände.<span class="ex">Ensidigt test kräver färre forskningspersoner men accepteras sällan, eftersom man då inte kan visa att den nya behandlingen är sämre.</span></dd></dl>
+      <dl class="term"><dt>Power <span class="tag">förvalt 80 %</span></dt><dd>Chansen att studien visar skillnaden om den verkligen finns. 80 % betyder att 1 av 5 studier missar en verklig skillnad (typ II-fel, β = 20 %). Det är den lägsta nivå som brukar accepteras av etikprövning och finansiärer.<span class="ex">90 % kräver ungefär en tredjedel fler forskningspersoner.</span></dd></dl>
+      <dl class="term"><dt>Varför α 5 % men β 20 %?</dt><dd>Typ I-fel anses värre: att införa en behandling som inte fungerar. Ett missat fynd kan upptäckas i nästa studie. Därför accepterar man fyra gånger större risk för typ II-fel än för typ I-fel.</dd></dl>
+      <dl class="term"><dt>Bortfall</dt><dd>Forskningspersoner som avbryter eller inte går att följa upp. Antalet som behövs delas med (1 − bortfall). Uppskatta från liknande studier.<span class="ex">10–20 % är vanligt i kirurgiska studier med 30 dagars uppföljning.</span></dd></dl>
+      <dl class="term"><dt>Effektstorlek</dt><dd>För medelvärden: skillnaden delad med standardavvikelsen (Cohens d). 0,2 räknas som liten, 0,5 som medelstor och 0,8 som stor. Det är effektstorleken, inte skillnaden ensam, som avgör antalet.</dd></dl>
+    </div>
+  </section>
+
+  <!-- R OCH STATA -->
+  <section>
+    <h2>Samma beräkning i R och Stata</h2>
+    <p>Koden fylls i med värdena från reglagen. Kommentarraden visar vilket svar du ska få.</p>
+    <h3 style="margin-top:14px">R</h3>
+    <div class="code"><pre id="codeR"></pre><button type="button" data-copy="codeR">Kopiera</button></div>
+    <h3>Stata</h3>
+    <div class="code"><pre id="codeS"></pre><button type="button" data-copy="codeS">Kopiera</button></div>
+    <p id="codeNote"></p>
+  </section>
+
+  <!-- TESTKÖRNING -->
+  <section>
+    <h2>Testkörning mot R</h2>
+    <p>Räknaren använder samma formler som R:s funktioner <span class="mono">power.t.test</span> (medelvärden, t-test) och <span class="mono">power.prop.test</span> (andelar). Jämförelse med exemplen i R:s hjälptexter:</p>
+    <div class="tbl"><table>
+      <tr><th>R-anrop</th><th>R ger</th><th>Räknaren ger</th><th></th></tr>
+      <tr><td class="mono">power.t.test(power = .90, delta = 1)</td><td class="num">n = 22,02</td><td class="num">23 per grupp</td><td class="ok">Stämmer</td></tr>
+      <tr><td class="mono">power.t.test(delta = 0.5, power = .80)</td><td class="num">n = 63,77</td><td class="num">64 per grupp</td><td class="ok">Stämmer</td></tr>
+      <tr><td class="mono">power.prop.test(p1 = .50, p2 = .75, power = .90)</td><td class="num">n = 76,7</td><td class="num">77 per grupp</td><td class="ok">Stämmer</td></tr>
+    </table></div>
+    <p style="margin-top:10px">R ger n som decimaltal. Avrunda alltid uppåt till hela forskningspersoner.</p>
+  </section>
+
+  <!-- FORMEL -->
+  <section>
+    <h2>Formlerna</h2>
+    <p><b>Medelvärden.</b> En enkel version som ger nästan samma svar:</p>
+    <div class="formula">n per grupp ≈ 2 · (z<sub>1−α/2</sub> + z<sub>1−β</sub>)² · standardavvikelse² / skillnad²</div>
+    <p>Räknaren använder t-fördelningen som R, vilket ger 1–2 fler forskningspersoner per grupp vid små studier.</p>
+    <p><b>Andelar.</b> Som i R:s <span class="mono">power.prop.test</span>, där p̄ är medelvärdet av de två andelarna:</p>
+    <div class="formula">n per grupp = [z<sub>1−α/2</sub> · √(2 · p̄(1 − p̄)) + z<sub>1−β</sub> · √(p<sub>1</sub>(1 − p<sub>1</sub>) + p<sub>2</sub>(1 − p<sub>2</sub>))]² / (p<sub>1</sub> − p<sub>2</sub>)²</div>
+    <div class="tbl"><table>
+      <tr><th>Del</th><th>Värde</th></tr>
+      <tr><td class="mono">z<sub>1−α/2</sub></td><td>1,96 vid 5 % tvåsidigt, 2,576 vid 1 %</td></tr>
+      <tr><td class="mono">z<sub>1−β</sub></td><td>0,84 vid 80 % power, 1,28 vid 90 %</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Hur figuren läses</h2>
+    <div class="terms">
+      <dl class="term"><dt>Grå kurva, H0</dt><dd>Vilka skillnader studien skulle få om behandlingarna är lika bra. Centrerad på 0.</dd></dl>
+      <dl class="term"><dt>Blå kurva, H1</dt><dd>Vilka skillnader studien skulle få om den skillnad du angett finns.</dd></dl>
+      <dl class="term"><dt>Kurvornas bredd</dt><dd>Standardfelet. Fler forskningspersoner ger smalare kurvor. Räknaren väljer n så att precis den andel av den blå kurvan du valt som power hamnar till höger om gränsvärdet.</dd></dl>
+      <dl class="term"><dt>Streckad linje</dt><dd>Gränsvärdet för signifikans. Resultat till höger om linjen ger p &lt; α.</dd></dl>
+    </div>
+  </section>
+
+  <p class="foot">Medelvärden: t-test för två lika stora grupper med lika varians, som R:s power.t.test. Andelar: normalapproximation med poolad varians under H0, som R:s power.prop.test och Statas power twoproportions. Svansen på andra sidan räknas inte in i power. Kurvorna i figuren är ritade som normalfördelningar.</p>
+</div>
+
+<script>
+function qnorm(p){const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],c=[-0.007784894002430293,-0.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],d=[0.007784695709041462,0.3224671290700398,2.445134137142996,3.754408661907416],pl=0.02425;let q,r;
+if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+q=p-0.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)}
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x))}
+const Phi=z=>0.5*(1+erf(z/Math.SQRT2));
+function lgamma(x){const g=7,c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];if(x<0.5)return Math.log(Math.PI/Math.sin(Math.PI*x))-lgamma(1-x);x-=1;let a=c[0];const t=x+g+0.5;for(let i=1;i<9;i++)a+=c[i]/(x+i);return 0.5*Math.log(2*Math.PI)+(x+0.5)*Math.log(t)-t+Math.log(a)}
+// t-fördelningen som i R: P(T' > c) för icke-central t, via integration över chi2
+function tsf(c,nu,ncp){const sd=Math.sqrt(2*nu),lo=Math.max(1e-9,nu-12*sd),hi=nu+14*sd,N=1600,h=(hi-lo)/N,k=nu/2,lc=-k*Math.LN2-lgamma(k);let s=0;
+ for(let i=0;i<=N;i++){const v=lo+i*h,w=(i===0||i===N)?1:(i%2?4:2);s+=w*Math.exp(lc+(k-1)*Math.log(v)-v/2)*(1-Phi(c*Math.sqrt(v/nu)-ncp))}return s*h/3}
+const qtCache={};
+function qtU(p,nu){const key=p+'|'+nu;if(qtCache[key])return qtCache[key];let a=0,b=60;for(let i=0;i<48;i++){const m=(a+b)/2;if(tsf(m,nu,0)>p)a=m;else b=m}return qtCache[key]=(a+b)/2}
+function tPower(n,delta,sd,alpha,tside){const nu=Math.max(1e-7,n-1)*2;return tsf(qtU(alpha/tside,nu),nu,Math.sqrt(n/2)*delta/sd)}
+function tN(delta,sd,alpha,tside,pw){let n=Math.max(2,Math.ceil(2*(qnorm(1-alpha/tside)+qnorm(pw))**2*sd*sd/(delta*delta)));
+ if(n>20000)return n;while(n>2&&tPower(n-1,delta,sd,alpha,tside)>=pw)n--;while(tPower(n,delta,sd,alpha,tside)<pw)n++;return n}
+function pN(p1,p2,alpha,tside,pw){const q1=1-p1,q2=1-p2,pb=(p1+p2)/2;return Math.ceil(((qnorm(1-alpha/tside)*Math.sqrt(2*pb*(1-pb))+qnorm(pw)*Math.sqrt(p1*q1+p2*q2))/Math.abs(p1-p2))**2)}
+
+const $=id=>document.getElementById(id);
+const dec=(v,n=1)=>String(+(+v).toFixed(n)).replace('.',',');
+const num=v=>Math.round(v).toLocaleString('sv-SE');
+const clamp=(v,lo,hi)=>Math.min(Math.max(v,lo),hi);
+let type='prop';
+
+function pair(id,lo,hi){const s=$(id),b=$(id+'B');b.value=s.value;
+  s.addEventListener('input',()=>{b.value=s.value;schedule()});
+  b.addEventListener('input',()=>{const v=parseFloat(String(b.value).replace(',','.'));if(isNaN(v))return;s.value=clamp(v,lo,hi);schedule()});
+  b.addEventListener('change',()=>{b.value=s.value});}
+pair('dl',0.5,50);pair('sd',1,60);pair('p1',1,95);pair('p2',1,95);pair('al',0.5,10);pair('pw',50,99);pair('dr',0,50);
+function setVal(id,v){$(id).value=v;$(id+'B').value=v;schedule()}
+document.querySelectorAll('[data-al]').forEach(b=>b.addEventListener('click',()=>setVal('al',b.dataset.al)));
+document.querySelectorAll('[data-pw]').forEach(b=>b.addEventListener('click',()=>setVal('pw',b.dataset.pw)));
+$('side').addEventListener('change',schedule);
+function setType(t){type=t;$('tMean').setAttribute('aria-pressed',t==='mean');$('tProp').setAttribute('aria-pressed',t==='prop');$('effMean').hidden=t!=='mean';$('effProp').hidden=t!=='prop';$('swTxt').textContent=t==='prop'?'För ja/nej-utfall, till exempel andel med infektion inom 30 dagar. Spridningen följer av andelarna, så ingen standardavvikelse behövs.':'För mätvärden, till exempel smärta i mm eller blodtryck. Ange skillnaden mellan gruppernas medelvärden och standardavvikelsen.';schedule()}
+$('tMean').addEventListener('click',()=>setType('mean'));$('tProp').addEventListener('click',()=>setType('prop'));
+let raf=0;function schedule(){cancelAnimationFrame(raf);raf=requestAnimationFrame(calc)}
+
+function calc(){
+  const al=+$('al').value/100, side=+$('side').value, pw=+$('pw').value/100, dr=+$('dr').value/100;
+  const za=qnorm(1-al/side);
+  let n,diff,se0,se1,unit,esTxt,rCode,sCode,sayTxt,ok=true;
+  if(type==='mean'){
+    const dl=+$('dl').value, sd=+$('sd').value;
+    n=tN(dl,sd,al,side,pw);diff=dl;se0=se1=sd*Math.sqrt(2/n);unit='enheter';
+    const nu=2*(n-1), crit=qtU(al/side,nu);
+    esTxt=`d = ${dec(dl/sd,2)} (${dl/sd<0.35?'liten':dl/sd<0.65?'medelstor':'stor'})`;$('esL').textContent='Effektstorlek (Cohens d)';
+    S.crit=crit*se0;
+    rCode=`power.t.test(delta = ${dl}, sd = ${sd}, sig.level = ${al}, power = ${pw}${side===1?',\n             alternative = "one.sided"':''})\n# Väntat svar: n = strax under ${n}, avrunda uppåt till ${n} per grupp`;
+    sCode=`power twomeans 0 ${dl}, sd(${sd}) alpha(${al}) power(${pw})${side===1?' onesided':''}\n* Ska ge cirka ${n} per grupp`;
+    sayTxt=`För att med <b>${dec(pw*100,0)} % chans</b> kunna visa en skillnad på <b>${dec(dl)} enheter</b> när standardavvikelsen är ${dec(sd)} enheter behövs <b>${num(n)} forskningspersoner per grupp</b>, med ${side===2?'tvåsidigt':'ensidigt'} test på signifikansnivån ${dec(al*100)} %.`;
+    $('codeNote').innerHTML='R räknar med t-fördelningen. Statas <span class="mono">power twomeans</span> räknar också med t-test och ska ge samma antal eller skilja med 1 per grupp.';
+  } else {
+    const p1=+$('p1').value/100, p2=+$('p2').value/100;
+    if(Math.abs(p1-p2)<1e-9){ok=false}
+    diff=Math.abs(p1-p2);
+    if(ok){n=pN(p1,p2,al,side,pw);const pb=(p1+p2)/2;se0=Math.sqrt(2*pb*(1-pb)/n);se1=Math.sqrt((p1*(1-p1)+p2*(1-p2))/n);S.crit=za*se0}
+    unit='procentenheter';
+    $('esL').textContent='Skillnad, relativ risk';
+    esTxt=ok?`${dec(diff*100)} procentenheter · relativ risk ${dec(p2/p1,2)}`:'–';
+    $('p2Txt').textContent=ok?`Ny behandling: ${dec(p2*100)} % mot ${dec(p1*100)} %, en ${p2<p1?'minskning':'ökning'} med ${dec(diff*100)} procentenheter (${dec(Math.abs(1-p2/p1)*100,0)} % relativt).`:'Andelarna är lika. Det finns ingen skillnad att upptäcka.';
+    rCode=ok?`power.prop.test(p1 = ${p1}, p2 = ${p2}, sig.level = ${al}, power = ${pw}${side===1?',\n                alternative = "one.sided"':''})\n# Väntat svar: n = strax under ${n}, avrunda uppåt till ${n} per grupp`:'# Andelarna är lika';
+    sCode=ok?`power twoproportions ${p1} ${p2}, alpha(${al}) power(${pw})${side===1?' onesided':''}\n* Ska ge ${n} per grupp`:'* Andelarna är lika';
+    sayTxt=ok?`För att med <b>${dec(pw*100,0)} % chans</b> kunna visa att kumulativ incidens ${p2<p1?'sjunker':'ökar'} från <b>${dec(p1*100)} % till ${dec(p2*100)} %</b> behövs <b>${num(n)} forskningspersoner per grupp</b>, med ${side===2?'tvåsidigt':'ensidigt'} test på signifikansnivån ${dec(al*100)} %.`:'Ange två olika andelar.';
+    $('codeNote').innerHTML='R:s <span class="mono">power.prop.test</span> och Statas <span class="mono">power twoproportions</span> använder samma formel som räknaren och ska ge samma antal.';
+  }
+  $('test').textContent=`${side===2?'tvåsidigt':'ensidigt'}, α ${dec(al*100)} %, power ${dec(pw*100,0)} %`;
+  $('es').textContent=esTxt;$('codeR').textContent=rCode;$('codeS').textContent=sCode;
+  if(!ok){$('nreq').textContent='–';$('ntot').textContent='–';$('nrec').textContent='–';$('say').innerHTML=sayTxt;$('fig').innerHTML='';return}
+  const rec=Math.ceil(n/(1-dr));
+  $('nreq').innerHTML=`${num(n)}<small>forskningspersoner</small>`;
+  $('ntot').textContent=num(2*n);
+  $('nrec').textContent=`${num(rec)} per grupp, ${num(2*rec)} totalt`;
+  $('say').innerHTML=sayTxt+(dr>0?` Med ${dec(dr*100,0)} % bortfall behöver ni rekrytera ${num(2*rec)} totalt.`:'');
+  Object.assign(S,{n,diff,se0,se1,unit,side,al,pw,type});draw();
+}
+const S={};
+
+function draw(){
+  const {n,diff,se0,se1,unit,side,al,pw,crit}=S;
+  const k=unit==='procentenheter'?100:1;
+  const L=56,R=744,T=58,B=226;
+  const t=(x,y,s,c,an='middle',sz=12,w=400)=>`<text x="${x}" y="${y}" text-anchor="${an}" font-size="${sz}" font-weight="${w}" fill="var(${c})" font-family="Figtree,sans-serif">${s}</text>`;
+  const pad=Math.max(3.6*Math.max(se0,se1),0.2*diff);
+  const lo=-(side===2?Math.max(pad,crit+0.6*se0):pad), hi=diff+pad;
+  const sx=x=>L+(x-lo)/(hi-lo)*(R-L);
+  const yy=(x,m,se)=>B-(B-T-10)*Math.exp(-0.5*((x-m)/se)**2);
+  const area=(m,se,a,b)=>{a=Math.max(a,lo);b=Math.min(b,hi);if(b<=a)return'';let p=`M${sx(a)},${B}`;for(let i=0;i<=100;i++){const x=a+(b-a)*i/100;p+=` L${sx(x).toFixed(1)},${yy(x,m,se).toFixed(1)}`}return p+` L${sx(b)},${B} Z`};
+  const curve=(m,se)=>{let p='';for(let i=0;i<=300;i++){const x=lo+(hi-lo)*i/300;p+=(i?' L':'M')+sx(x).toFixed(1)+','+yy(x,m,se).toFixed(1)}return p};
+  let g='';
+  g+=t(L,22,`${num(n)} forskningspersoner per grupp`,'--fg','start',19,600);
+  g+=t(L,42,`α ${dec(al*100)} % ${side===2?'tvåsidigt':'ensidigt'} · power ${dec(pw*100,0)} % · standardfel ${dec(se1*k,2)} ${unit}`,'--muted','start',12);
+  const span=(hi-lo)*k, raw=span/7, mag=10**Math.floor(Math.log10(raw)), st=[1,2,2.5,5,10].map(q=>q*mag).find(q=>q>=raw)/k;
+  for(let x=Math.ceil(lo/st-1e-9)*st;x<=hi+1e-9;x+=st){const v=Math.abs(x)<1e-12?0:x*k;g+=`<line x1="${sx(x)}" x2="${sx(x)}" y1="${B}" y2="${B+5}" stroke="var(--muted)"/>`+t(sx(x),B+19,(v<0?'−':'')+dec(Math.abs(v),st*k<1?2:1),'--muted','middle',11)}
+  g+=`<path d="${area(0,se0,crit,hi)}" fill="var(--alpha)" fill-opacity="0.5"/>`;
+  if(side===2)g+=`<path d="${area(0,se0,lo,-crit)}" fill="var(--alpha)" fill-opacity="0.5"/>`;
+  g+=`<path d="${area(diff,se1,lo,crit)}" fill="var(--beta)" fill-opacity="0.5"/>`;
+  g+=`<path d="${area(diff,se1,crit,hi)}" fill="var(--power)" fill-opacity="0.28"/>`;
+  g+=`<path d="${curve(0,se0)}" fill="none" stroke="var(--h0)" stroke-width="2"/>`;
+  g+=`<path d="${curve(diff,se1)}" fill="none" stroke="var(--h1)" stroke-width="2"/>`;
+  g+=`<line x1="${sx(crit)}" x2="${sx(crit)}" y1="${T-6}" y2="${B}" stroke="var(--fg)" stroke-dasharray="4 3"/>`;
+  if(side===2)g+=`<line x1="${sx(-crit)}" x2="${sx(-crit)}" y1="${T-6}" y2="${B}" stroke="var(--fg)" stroke-dasharray="4 3" opacity="0.5"/>`;
+  g+=t(sx(0)-6,T+4,'H0: 0','--h0','end',12,500);
+  g+=t(sx(diff)+6,T+4,`H1: ${dec(diff*k)}`,'--h1','start',12,500);
+  g+=`<line x1="${L}" x2="${R}" y1="${B}" y2="${B}" stroke="var(--muted)"/>`;
+  g+=t((L+R)/2,B+42,`Skattad skillnad mellan grupperna (${unit})`,'--fg','middle',13);
+  g+=t((L+R)/2,B+62,`Gränsvärde ${dec(crit*k,2)} ${unit}: resultat till höger om streckade linjen blir signifikanta`,'--muted','middle',11);
+  $('fig').innerHTML=g;
+}
+document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>{
+  const el=$(b.dataset.copy);const done=()=>{b.textContent='Kopierat';setTimeout(()=>b.textContent='Kopiera',1500)};
+  const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Markerat, tryck Ctrl+C';setTimeout(()=>b.textContent='Kopiera',2500)};
+  try{navigator.clipboard.writeText(el.textContent).then(done,sel)}catch(e){sel()}
+}));
+setType('prop');
+</script>
+
+</body></html>
